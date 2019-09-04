@@ -70,3 +70,89 @@ describe("Reactive suite:", function () {
         }).toThrow("Circular reference error");
     });
 });
+
+
+describe("Reactive test suite:", function () {
+    var a;
+    beforeEach(function () {
+        a = {
+            a: 1,
+            b: {
+                c: 2,
+                d: 3,
+                f: {
+                    h: 'aaa'
+                },
+                g: [4, 5]
+            },
+            c: [1, 2, 3]
+        };
+        for (var i in a) {
+            reactivejs.set(a, i, a[i]);
+        }
+    });
+
+    it("Set new property by reference", function () {
+        var b = {};
+        // If b.c is set to a.b through "setByRef", a.b will change when b.c is re-assigned
+        reactivejs.setByRef(b, 'c', a, 'b');
+        b.c = 1;
+        expect(b.c).toEqual(a.b);
+    });
+
+    it("Re-set a property", function() {
+        var b = {};
+        reactivejs.set(a, 'd', 3);
+        reactivejs.setByRef(b, 'c', a, 'd');
+        
+        b.c = 1;
+        expect(a.d).toEqual(1);
+        
+        reactivejs.set(a, 'd', 5);
+        expect(b.c).toEqual(5);
+    });
+
+    it("Re-setByRef a property", function() {
+        var b = {};
+        reactivejs.set(a, 'd', 3);
+        reactivejs.setByRef(b, 'c', a, 'd');
+        
+        b.c = 1;
+        expect(a.d).toEqual(1);
+        
+        reactivejs.setByRef(b, 'c', a, 'd');
+        a.d = 7;
+        expect(b.c).toEqual(7);
+    });
+
+    it("Set new property by operator =", function () {
+        var b = {};
+        // If b.c is set to a.b through operator =, re-assign b.c will not affect a.b
+        b.c = a.b;
+        b.c = 1;
+        expect(b.c).not.toEqual(a.b);
+    });
+
+    xit('Set by reference on non-reactive object', function () {
+        var b = {};
+        a.e = 3;
+
+        expect(function () {
+            reactivejs.setByRef(b, 'c', a, 'e');
+        }).toThrow('Not a reactive object');
+    });
+
+    it('Set by reference on non-reactive property', function () {
+        var b = {};
+        a.d = 3;
+
+        expect(function () {
+            reactivejs.setByRef(b, 'c', a, 'd');
+        }).toThrow('Property "d" of source object is not reactive');
+    });
+
+    it("Set array to array", function () {
+        a.b.g = [1,2,3];
+        expect(a.b.g.length).toEqual(3);
+    });
+});

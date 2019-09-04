@@ -22,7 +22,7 @@ export function observe(obj, key) {
         Object.defineProperty(obj, OB_KEY, {
             enumerable: false,
             configurable: true,
-            get: function() {
+            get: function () {
                 return ob;
             }
         });
@@ -67,11 +67,15 @@ export function removeWatch(obj, key, name) {
     // remove watch from root obj
     var watchesOnKey = rootObj.obj[OB_KEY].watches[rootObj.key];
     if (watchesOnKey) {
-        for (var i = watchesOnKey.length - 1; i > -1; i--) {
-            if (watchesOnKey[i].name == name) {
-                watchesOnKey.splice(i, 1);
-                return;
+        if (typeof name !== 'undefined') {
+            for (var i = watchesOnKey.length - 1; i > -1; i--) {
+                if (watchesOnKey[i].name == name) {
+                    watchesOnKey.splice(i, 1);
+                    return;
+                }
             }
+        } else {
+            watchesOnKey.splice(0, watchesOnKey.length);
         }
     }
 }
