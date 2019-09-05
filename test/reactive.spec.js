@@ -28,6 +28,15 @@ describe("Reactive suite:", function () {
         expect(a.a).toEqual(3);
     });
 
+    it("Init property by set setter", function () {
+        var inWatch = '';
+        reactivejs.set(a, 'd', function (val) {
+            inWatch += val;
+        });
+        a.d = 5;
+        expect(inWatch).toEqual('5');
+    })
+
 
     it("Set new property by reference", function () {
         var b = {};
@@ -92,34 +101,26 @@ describe("Reactive test suite:", function () {
         }
     });
 
-    it("Set new property by reference", function () {
-        var b = {};
-        // If b.c is set to a.b through "setByRef", a.b will change when b.c is re-assigned
-        reactivejs.setByRef(b, 'c', a, 'b');
-        b.c = 1;
-        expect(b.c).toEqual(a.b);
-    });
-
-    it("Re-set a property", function() {
+    it("Re-set a property", function () {
         var b = {};
         reactivejs.set(a, 'd', 3);
         reactivejs.setByRef(b, 'c', a, 'd');
-        
+
         b.c = 1;
         expect(a.d).toEqual(1);
-        
+
         reactivejs.set(a, 'd', 5);
         expect(b.c).toEqual(5);
     });
 
-    it("Re-setByRef a property", function() {
+    it("Re-setByRef a property", function () {
         var b = {};
         reactivejs.set(a, 'd', 3);
         reactivejs.setByRef(b, 'c', a, 'd');
-        
+
         b.c = 1;
         expect(a.d).toEqual(1);
-        
+
         reactivejs.setByRef(b, 'c', a, 'd');
         a.d = 7;
         expect(b.c).toEqual(7);
@@ -133,15 +134,6 @@ describe("Reactive test suite:", function () {
         expect(b.c).not.toEqual(a.b);
     });
 
-    xit('Set by reference on non-reactive object', function () {
-        var b = {};
-        a.e = 3;
-
-        expect(function () {
-            reactivejs.setByRef(b, 'c', a, 'e');
-        }).toThrow('Not a reactive object');
-    });
-
     it('Set by reference on non-reactive property', function () {
         var b = {};
         a.d = 3;
@@ -151,8 +143,37 @@ describe("Reactive test suite:", function () {
         }).toThrow('Property "d" of source object is not reactive');
     });
 
-    it("Set array to array", function () {
-        a.b.g = [1,2,3];
-        expect(a.b.g.length).toEqual(3);
+    it("Set object to object (diff props)", function () {
+        var inWatch = '';
+        reactivejs.watch(a.b, 'f', function(o, n) {
+            inWatch += JSON.stringify(o) + '|' + JSON.stringify(n);
+        });
+        a.b.f = {
+            aa: 1
+        };
+        expect(inWatch).toEqual('{"h":"aaa"}|{"aa":1}');
     });
+
+    it("Set object to object (has same props)", function () {
+        var inWatch = '';
+        reactivejs.watch(a.b, 'f', function(o, n) {
+            inWatch += JSON.stringify(o) + '|' + JSON.stringify(n);
+        });
+        a.b.f = {
+            h: "3a",
+            aa: 1
+        };
+        expect(inWatch).toEqual('{"h":"aaa"}|{"h":"3a","aa":1}');
+    });
+
+
+    it("Set array to array", function () {
+        var inWatch = '';
+        reactivejs.watch(a.b, 'g', function(o, n) {
+            inWatch += o + '|' + n;
+        });
+        a.b.g = [1, 2, 3];
+        expect(inWatch).toEqual('4,5|1,2,3');
+    });
+
 });
