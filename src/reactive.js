@@ -1,6 +1,7 @@
 import {
     observe,
     notify,
+    notifyParent,
     isObserved,
     addWatch,
     removeWatch,
@@ -12,6 +13,62 @@ import {
     isObject,
     isArray,
 } from './utils'
+
+// intercept method that update a array
+var arrayMethodNames = [
+	'push',
+	'pop',
+	'shift',
+	'unshift',
+	'splice',
+	'sort',
+	'reverse'
+];
+var arrayProto = Array.prototype;
+var arrayMethods = Object.create(arrayProto);
+arrayMethodNames.forEach(function (method) {
+	// cache original method
+	var original = arrayProto[method];
+	Object.defineProperty(arrayMethods, method, {
+		enumerable: false,
+		writable: true,
+		configurable: true,
+		value: function () {
+			var args = [],
+				len = arguments.length;
+			while (len--) args[len] = arguments[len];
+
+			var oldVal = this.slice();
+			var result = original.apply(this, args);
+			var newItems;
+			switch (method) {
+				case 'push':
+				case 'unshift':
+					newItems = args;
+					break
+				case 'splice':
+					newItems = args.slice(2);
+					break
+			}
+			if (newItems) {
+				for (var i in newItems) {
+					toReactiveObject(newItems[i]);
+				}
+            }
+            // notify change 
+            notifyParent(this, oldVal, this);
+			return result;
+		}
+	});
+});
+
+function overrideArrayMethod(array) {
+	for (var i in arrayMethodNames) {
+		var method = arrayMethodNames[i];
+		Object.defineProperty(array, method, Object.getOwnPropertyDescriptor(arrayMethods, method));
+	}
+}
+
 
 function defineReactiveProperty(obj, key, val) {
     var property = Object.getOwnPropertyDescriptor(obj, key);
@@ -65,14 +122,12 @@ function defineReactiveProperty(obj, key, val) {
                 toReactiveObject(newVal);
 				val = newVal;
             }
-            // toReactiveObject(newVal);
-            // val = newVal;
             
             notify(obj, key, value, newVal);
         }
     });
 
-    observe(obj, key);
+    observe(obj, key, val);
 }
 
 function togglePropertyEnumable(obj, key, enumerable) {
@@ -91,7 +146,7 @@ function togglePropertyEnumable(obj, key, enumerable) {
 function toReactiveObject(obj) {
     if (isObject(obj)) {
         if (isArray(obj)) {
-            // overrideArrayMethod(obj);
+            overrideArrayMethod(obj);
             for (var i in obj) {
                 toReactiveObject(obj[i]);
             }

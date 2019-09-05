@@ -1,5 +1,6 @@
 import {
-    isObject
+    isObject,
+    isArray
 }
 from './utils'
 
@@ -12,11 +13,17 @@ function Observer() {
     this.referenced = {};
     // watches for properties of the host. The property must be original, not referencing other properties
     this.watches = {};
+
+    // for array
+    // parent object
+    this.parent = null;
+    // property name in parent object
+    this.key = null;
 }
 
 
 
-export function observe(obj, key) {
+export function observe(obj, key, val) {
     if (!obj[OB_KEY]) {
         var ob = new Observer();
         Object.defineProperty(obj, OB_KEY, {
@@ -27,13 +34,26 @@ export function observe(obj, key) {
             }
         });
     }
-    obj[OB_KEY].referenced[key] = [];
+    if (typeof key !== 'undefined') {
+        obj[OB_KEY].referenced[key] = [];
+    }
+    if (isArray(val)) {
+        observe(val);
+        val[OB_KEY].parent = obj;
+        val[OB_KEY].key = key;
+    }
 }
 
 export function notify(obj, key, oldVal, newVal) {
     var watches = obj && obj[OB_KEY] && obj[OB_KEY].watches[key];
     for (var i in watches) {
         watches[i].fn(oldVal, newVal);
+    }
+}
+
+export function notifyParent(obj, oldVal, newVal) {
+    if (obj[OB_KEY] && obj[OB_KEY].parent && obj[OB_KEY].key) {
+        notify(obj[OB_KEY].parent, obj[OB_KEY].key, oldVal, newVal);
     }
 }
 

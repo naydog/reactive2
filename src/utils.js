@@ -1,6 +1,6 @@
 
 export function isObject(obj) {
-	return typeof obj == 'object' && obj;
+	return typeof obj == 'object' && !!obj;
 }
 
 export function isArray(obj) {
