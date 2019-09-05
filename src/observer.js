@@ -45,9 +45,9 @@ function notify(obj, key, oldVal, newVal) {
     var watches = obj && obj[OB_KEY] && obj[OB_KEY].watches[key]
     for (var i in watches) {
         if (watches[i].name == cc.DEF_SETTER) {
-            watches[i].fn(newVal)
+            watches[i].fn.call(watches[i].obj, newVal)
         } else {
-            watches[i].fn(oldVal, newVal)
+            watches[i].fn.call(watches[i].obj, oldVal, newVal)
         }
     }
 }
@@ -72,6 +72,7 @@ function addWatch(obj, key, name, fn) {
         if (watchesOnKey[i].name == name) {
             console.warn(`There is already a watch named ${name}. Will override it`)
             watchesOnKey[i].fn = fn
+            watchesOnKey[i].obj = obj
             return
         }
     }
@@ -79,7 +80,8 @@ function addWatch(obj, key, name, fn) {
     // new watch
     watchesOnKey.push({
         name: name,
-        fn: fn
+        fn: fn,
+        obj: obj,
     })
 }
 

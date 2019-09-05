@@ -80,12 +80,9 @@ function defineReactiveProperty(obj, key, val) {
 			if (ut.isObject(newVal) && ut.isObject(value) && ut.isArray(newVal) == ut.isArray(value)) { // Both are objects, and of same type
 				var oldValue = JSON.parse(JSON.stringify(value)) // copy old value for notify
 				if (ut.isArray(newVal)) { //  Both are arrays
-					for (var i = 0; i < value.length && i < newVal.length; i++) {
-						toReactiveObject(newVal[i])
-						value[i] = newVal[i]
-					}
-					for (var i = value.length; i < newVal.length; i++) {
-						toReactiveProperty(value, i, newVal[i])
+					for (var i = 0; i < newVal.length; i++) {
+						toReactiveObject(newVal[i]);
+						value[i] = newVal[i];
 					}
 					value.length = newVal.length
 				} else { // Both are normal objects

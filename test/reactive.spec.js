@@ -81,7 +81,7 @@ describe("Reactive suite:", function () {
 });
 
 
-describe("Reactive test suite:", function () {
+describe("Reactive suite 2:", function () {
     var a;
     beforeEach(function () {
         a = {
@@ -145,7 +145,7 @@ describe("Reactive test suite:", function () {
 
     it("Set object to object (diff props)", function () {
         var inWatch = '';
-        reactivejs.watch(a.b, 'f', function(o, n) {
+        reactivejs.watch(a.b, 'f', function (o, n) {
             inWatch += JSON.stringify(o) + '|' + JSON.stringify(n);
         });
         a.b.f = {
@@ -156,7 +156,7 @@ describe("Reactive test suite:", function () {
 
     it("Set object to object (has same props)", function () {
         var inWatch = '';
-        reactivejs.watch(a.b, 'f', function(o, n) {
+        reactivejs.watch(a.b, 'f', function (o, n) {
             inWatch += JSON.stringify(o) + '|' + JSON.stringify(n);
         });
         a.b.f = {
@@ -169,11 +169,56 @@ describe("Reactive test suite:", function () {
 
     it("Set array to array", function () {
         var inWatch = '';
-        reactivejs.watch(a.b, 'g', function(o, n) {
+        reactivejs.watch(a.b, 'g', function (o, n) {
             inWatch += o + '|' + n;
         });
         a.b.g = [1, 2, 3];
         expect(inWatch).toEqual('4,5|1,2,3');
     });
 
+});
+
+// external reference
+describe("Reactive suite 3:", function () {
+    var a;
+    beforeEach(function () {
+        a = {
+            a: 1,
+            b: {
+                c: 2,
+                d: 3,
+                f: {
+                    h: 'aaa'
+                },
+                g: [4, 5]
+            },
+            c: [1, 2, 3]
+        };
+        for (var i in a) {
+            reactivejs.set(a, i, a[i]);
+        }
+    });
+
+    it("Define a var pointing to reactive primitive", function () {
+        var b = a.a;
+        a.a = 2;
+        expect(b).toEqual(1);
+    });
+
+    // consider defining behavior in practice
+    xit("Define a var pointing to reactive object", function () {
+        var b = a.b.f;
+        a.b.f = {
+            i: "bbb"
+        };
+        expect(Object.keys(b)).toEqual(["h"]);
+    });
+
+    // consider defining behavior in practice
+    xit("Define a var pointing to reactive array", function () {
+        var b = a.b.g;
+        a.b.g = [1, 2, 3];
+        window.aaa = a;
+        expect(b).toEqual([4, 5]);
+    });
 });
