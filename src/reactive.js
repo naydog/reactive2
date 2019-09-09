@@ -61,6 +61,7 @@ function overrideArrayMethod(array) {
 function defineReactiveProperty(obj, key, val) {
 	var property = Object.getOwnPropertyDescriptor(obj, key)
 	if (property && property.configurable === false) {
+		console.warn(`Property ${key} is unconfigurable.`)
 		return
 	}
 
@@ -81,8 +82,8 @@ function defineReactiveProperty(obj, key, val) {
 				var oldValue = JSON.parse(JSON.stringify(value)) // copy old value for notify
 				if (ut.isArray(newVal)) { //  Both are arrays
 					for (var i = 0; i < newVal.length; i++) {
-						toReactiveObject(newVal[i]);
-						value[i] = newVal[i];
+						toReactiveObject(newVal[i])
+						value[i] = newVal[i]
 					}
 					value.length = newVal.length
 				} else { // Both are normal objects
@@ -150,6 +151,13 @@ function toReactiveProperty(obj, key, val) {
 	toReactiveObject(obj[key])
 }
 
+/**
+ * Add new reactive property.
+ * Using = to add new property won't make it reactive. Please use this method.
+ * @param {object} obj an object
+ * @param {string} key property name
+ * @param {any} valOrSetter property value to set or setter if it's function
+ */
 function set(obj, key, valOrSetter) {
 	// val is a function, then add val as watch
 	if (typeof valOrSetter == 'function') {
@@ -169,7 +177,23 @@ function setValue(obj, key, val) {
 	}
 }
 
+/**
+ * return a non-reactive copy of reactive object.
+ * @param {object} obj 
+ */
+function copy(obj) {
+	return JSON.parse(JSON.stringify(obj))
+}
 
+/**
+ * Watch a property change, and do something.
+ * If a property is watched with a same name twice, only the latter watch function works
+ * @param {object} obj object to watch
+ * @param {string} key property name to watch
+ * @param {string} name name. Can be omitted, then the 3rd parameter should be callback function
+ * @param {function} fn do something
+ * 		function(oldVal, newVal)
+ */
 function watch(obj, key, name, fn) {
 	if (typeof name === 'function') {
 		ob.addWatch(obj, key, cc.DEF_WATCH, name)
@@ -178,11 +202,24 @@ function watch(obj, key, name, fn) {
 	}
 }
 
+/**
+ * Unwatch property change. If a name is passed, then remove watches has that name only
+ * @param {object} obj object
+ * @param {string} key property name to unwatch
+ * @param {string} name watch name. If not passed, remove all watches.
+ */
 function unwatch(obj, key, name) {
 	ob.removeWatch(obj, key, name)
 }
 
-
+/**
+ * Assign by reference. Adaptable for reactive object
+ * Reactive object must have an unenumerable property '_$ob$_', which saves the parent object and its property name in parent
+ * @param {object} targetObj 
+ * @param {string} targetKey 
+ * @param {object} sourceObj obj to reference
+ * @param {string} sourceKey key to reference. If not set, then reference sourceObj
+ */
 function setByRef(targetObj, targetKey, sourceObj, sourceKey) {
 	var property = Object.getOwnPropertyDescriptor(sourceObj, sourceKey)
 	if (!property || typeof property.value !== 'undefined' || !ob.isObserved(sourceObj)) {
@@ -213,5 +250,6 @@ export default {
 	set,
 	setByRef,
 	watch,
-	unwatch
+	unwatch,
+	copy,
 }

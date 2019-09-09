@@ -205,20 +205,31 @@ describe("Reactive suite 3:", function () {
         expect(b).toEqual(1);
     });
 
-    // consider defining behavior in practice
-    xit("Define a var pointing to reactive object", function () {
+    it("Define a var pointing to reactive object", function () {
         var b = a.b.f;
+        a.b.f = {
+            i: "bbb"
+        };
+        expect(Object.keys(b)).toEqual(["i"]);
+    });
+
+    it("A copy of reactive object is not reactive", function () {
+        var b = reactivejs.copy(a.b.f);
         a.b.f = {
             i: "bbb"
         };
         expect(Object.keys(b)).toEqual(["h"]);
     });
 
-    // consider defining behavior in practice
-    xit("Define a var pointing to reactive array", function () {
+    it("Define a var pointing to reactive array", function () {
         var b = a.b.g;
         a.b.g = [1, 2, 3];
-        window.aaa = a;
+        expect(b).toEqual([1, 2, 3]);
+    });
+
+    it("A copy of reactive array is not reactive", function () {
+        var b = reactivejs.copy(a.b.g);
+        a.b.g = [1, 2, 3];
         expect(b).toEqual([4, 5]);
     });
 });
