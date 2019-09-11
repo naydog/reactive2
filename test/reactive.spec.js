@@ -179,7 +179,7 @@ describe("Reactive suite 2:", function () {
 });
 
 // external reference
-describe("Reactive suite 3:", function () {
+fdescribe("Reactive suite 3:", function () {
     var a;
     beforeEach(function () {
         a = {
@@ -199,37 +199,68 @@ describe("Reactive suite 3:", function () {
         }
     });
 
-    it("Define a var pointing to reactive primitive", function () {
+    it("A var pointing to reactive primitive, then change primitive to primitive", function () {
         var b = a.a;
         a.a = 2;
         expect(b).toEqual(1);
     });
 
-    it("Define a var pointing to reactive object", function () {
+    it("A var pointing to reactive primitive, then change primitive to object", function () {
+        var b = a.a;
+        a.a = {
+            a: 2
+        };
+        expect(b).toEqual(1);
+    });
+
+    it("A var pointing to reactive primitive, then change primitive to array", function () {
+        var b = a.a;
+        a.a = [1, 2];
+        expect(b).toEqual(1);
+    });
+
+    it("Define a var pointing to reactive object, then change object to object", function () {
         var b = a.b.f;
         a.b.f = {
             i: "bbb"
         };
-        expect(Object.keys(b)).toEqual(["i"]);
+        expect(b).toEqual({
+            h: "aaa"
+        });
     });
 
-    it("A copy of reactive object is not reactive", function () {
-        var b = reactivejs.copy(a.b.f);
-        a.b.f = {
-            i: "bbb"
-        };
-        expect(Object.keys(b)).toEqual(["h"]);
+    it("Define a var pointing to reactive object, then change object to primitive", function () {
+        var b = a.b.f;
+        a.b.f = 2;
+        expect(b).toEqual({
+            h: "aaa"
+        });
     });
 
-    it("Define a var pointing to reactive array", function () {
+    it("Define a var pointing to reactive object, then change object to array", function () {
+        var b = a.b.f;
+        a.b.f = [1, 2];
+        expect(b).toEqual({
+            h: "aaa"
+        });
+    });
+
+    it("Define a var pointing to reactive array, then change array to array", function () {
         var b = a.b.g;
-        a.b.g = [1, 2, 3];
-        expect(b).toEqual([1, 2, 3]);
-    });
-
-    it("A copy of reactive array is not reactive", function () {
-        var b = reactivejs.copy(a.b.g);
         a.b.g = [1, 2, 3];
         expect(b).toEqual([4, 5]);
     });
+
+    it("Define a var pointing to reactive array, then change array to primitive", function () {
+        var b = a.b.g;
+        a.b.g = 1;
+        expect(b).toEqual([4, 5]);
+    });
+
+    it("Define a var pointing to reactive array, then change array to object", function () {
+        var b = a.b.g;
+        a.b.g = {c: 3};
+        expect(b).toEqual([4, 5]);
+    });
+
 });

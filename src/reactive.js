@@ -18,7 +18,7 @@ arrayMethodNames.forEach(function (method) {
 	// cache original method
 	var original = arrayProto[method]
 	Object.defineProperty(arrayMethods, method, {
-		enumerable: false,
+		enumerable: false, 
 		writable: true,
 		configurable: true,
 		value: function () {
@@ -178,14 +178,6 @@ function setValue(obj, key, val) {
 }
 
 /**
- * return a non-reactive copy of reactive object.
- * @param {object} obj 
- */
-function copy(obj) {
-	return JSON.parse(JSON.stringify(obj))
-}
-
-/**
  * Watch a property change, and do something.
  * If a property is watched with a same name twice, only the latter watch function works
  * @param {object} obj object to watch
@@ -251,5 +243,4 @@ export default {
 	setByRef,
 	watch,
 	unwatch,
-	copy,
 }
